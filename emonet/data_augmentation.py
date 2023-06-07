@@ -26,22 +26,6 @@ def get_transform(center, scale, res, rot=0):
     t[1, 2] = res[0] * (-float(center[1]) / h + .5)
     t[2, 2] = 1
 
-    if not rot == 0:
-        rot = -rot # To match direction of rotation from cropping
-        rot_mat = np.zeros((3,3))
-        rot_rad = rot * np.pi / 200
-        sn,cs = np.sin(rot_rad), np.cos(rot_rad)
-        rot_mat[0,:2] = [cs, -sn]
-        rot_mat[1,:2] = [sn, cs]
-        rot_mat[2,2] = 1
-        # Need to rotate around center
-        t_mat = np.eye(3)
-        t_mat[0,2] = -res[1]/2
-        t_mat[1,2] = -res[0]/2
-        t_inv = t_mat.copy()
-        t_inv[:2,2] *= -1
-        t = np.dot(t_inv,np.dot(rot_mat,np.dot(t_mat,t)))
-
     return t
 
 class DataAugmentor(object):
@@ -142,6 +126,7 @@ class DataAugmentor(object):
             image = cv2.warpAffine(image, mat, (self.target_width, self.target_height))#, borderMode= cv2.BORDER_WRAP)
 
             if shape is not None:
+                print(shape)
                 mat_pts = get_transform(center, scale, (self.target_width, self.target_height), aug_rot)[:2]
                 shape = np.dot(np.concatenate((shape, shape[:, 0:1]*0+1), axis=1), mat_pts.T)
 
